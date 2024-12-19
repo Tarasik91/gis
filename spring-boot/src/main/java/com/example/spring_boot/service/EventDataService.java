@@ -5,6 +5,7 @@ import com.example.spring_boot.repository.EventDataRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.concurrent.ThreadLocalRandom;
@@ -37,7 +38,8 @@ public class EventDataService {
                     eventData.setSensorData("{sen" + i + "=" + i + "}");
                     eventData.setHeading(al);
                     eventData.setBatteryLevel((short)1);
-                    eventData.setTimestamp(startDate.plusDays(j).plusSeconds(k).toEpochSecond(ZoneOffset.of("+02:00")));
+                    LocalDateTime date = startDate.plusDays(j).plusSeconds(k);
+                    eventData.setTimestamp( Timestamp.valueOf(date).getNanos());
                     eventData.setSatelliteCount((byte)i);
                     var lat =ThreadLocalRandom.current().nextInt(1000);
                     var longit =ThreadLocalRandom.current().nextInt(10000);
