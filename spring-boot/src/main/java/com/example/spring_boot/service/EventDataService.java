@@ -16,7 +16,9 @@ import java.util.concurrent.ThreadLocalRandom;
 public class EventDataService {
 
     private EventDataRepository eventDataRepository;
-    private static int user_count = 10;
+    private static int device_count = 10;
+    private static int secondsInDay = 86400;
+    private static int days = 350;
 
     public EventDataService(EventDataRepository repository) {
         this.eventDataRepository = repository;
@@ -29,10 +31,11 @@ public class EventDataService {
 
     public void createData() {
         var startDate = LocalDateTime.of(2024, 1, 1, 0, 0);
-        for (short i = 1; i <= user_count; i++) {
-            for (int j = 0; j < 350; j++) {
-                List<EventData> list = new ArrayList<>(20);
-                for (int k = 0; k < 86400; k += 20) {
+        long startTime = System.currentTimeMillis();
+        for (short i = 1; i <= device_count; i++) {
+            for (int j = 0; j < days; j++) {
+                List<EventData> list = new ArrayList<>(100);
+                for (int k = 0; k < secondsInDay; k += 20) {
                     var eventData = new EventData();
 
                     eventData.setDeviceId(i);
@@ -62,6 +65,6 @@ public class EventDataService {
             }
             System.out.println("next device = " + i);
         }
-        System.out.println("finish");
+        System.out.println("finished in " + (System.currentTimeMillis() - startTime) / 1000 + " s");
     }
 }
