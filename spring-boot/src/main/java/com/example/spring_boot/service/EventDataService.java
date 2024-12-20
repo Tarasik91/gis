@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -26,10 +28,11 @@ public class EventDataService {
     }
 
     public void createData() {
-        var startDate = LocalDateTime.of(2024, 1, 1,0,0);
+        var startDate = LocalDateTime.of(2024, 1, 1, 0, 0);
         for (short i = 1; i <= user_count; i++) {
             for (int j = 0; j < 350; j++) {
-                for (int k = 0; k < 86400; k = +20) {
+                List<EventData> list = new ArrayList<>(20);
+                for (int k = 0; k < 86400; k += 20) {
                     var eventData = new EventData();
 
                     eventData.setDeviceId(i);
@@ -37,15 +40,23 @@ public class EventDataService {
                     eventData.setAltitude(al);
                     eventData.setSensorData("{sen" + i + "=" + i + "}");
                     eventData.setHeading(al);
-                    eventData.setBatteryLevel((short)1);
+                    eventData.setBatteryLevel((short) 1);
                     LocalDateTime date = startDate.plusDays(j).plusSeconds(k);
-                    eventData.setTimestamp( Timestamp.valueOf(date).getNanos());
-                    eventData.setSatelliteCount((byte)i);
-                    var lat =ThreadLocalRandom.current().nextInt(1000);
-                    var longit =ThreadLocalRandom.current().nextInt(10000);
+                    eventData.setTimestamp(Timestamp.valueOf(date).getTime());
+                    eventData.setSatelliteCount((byte) i);
+                    var lat = ThreadLocalRandom.current().nextInt(1000);
+                    var longit = ThreadLocalRandom.current().nextInt(10000);
                     eventData.setLatitude(Double.parseDouble("49.842" + lat));
                     eventData.setLongitude(Double.parseDouble("24.03" + longit));
-                    eventDataRepository.save(eventData);
+                    list.add(eventData);
+                    if (list.size() == 100) {
+                        eventDataRepository.saveAll(list);
+                        list = new ArrayList<>();
+                    }
+
+                }
+                if (!list.isEmpty()) {
+                    eventDataRepository.saveAll(list);
                 }
                 System.out.println("next Day = " + j);
             }
