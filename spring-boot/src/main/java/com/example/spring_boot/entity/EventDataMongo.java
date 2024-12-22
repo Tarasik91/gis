@@ -1,36 +1,23 @@
 package com.example.spring_boot.entity;
 
-import jakarta.persistence.*;
+
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
-
-@Table(name = "event-data")
-@Entity
-public class EventData {
+@Document(collection = "event_data")
+public class EventDataMongo {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    private long id;
-    @Column
+    private String id;
     private long deviceId;
-    @Column
     private long timestamp;
-    @Column
     private double latitude;
-    @Column
     private double longitude;
-    @Column
     private short altitude;
-    @Column
     private short heading;
-    @Column
     private short speed;
-    @Column
     private short batteryLevel;
-    @Column
     private byte satelliteCount;
-    @Column
     private String sensorData;
 
 
@@ -42,11 +29,11 @@ public class EventData {
         this.deviceId = deviceId;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
