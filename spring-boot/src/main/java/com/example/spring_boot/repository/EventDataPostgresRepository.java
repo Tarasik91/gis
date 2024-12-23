@@ -7,8 +7,11 @@ import org.springframework.stereotype.Repository;
 
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 @Repository
 public interface  EventDataPostgresRepository extends CrudRepository<EventData, String> {
 
-    Page<EventData> findByLatitudeContaining(String key, Pageable pageable);
+    List<EventData> findByDeviceIdAndTimestampBetween(long deviceId, long timestampAfter, long timestampBefore);
+
 }

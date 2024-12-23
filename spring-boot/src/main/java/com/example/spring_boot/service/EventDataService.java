@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -31,9 +32,44 @@ public class EventDataService {
         this.eventDataMongoRepository = eventDataMongoRepository;
     }
 
-    public Page<EventData> search(String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return eventDataRepository.findByLatitudeContaining(keyword, pageable);
+    public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily) {
+        List<EventData> events = eventDataRepository.findByDeviceIdAndTimestampBetween(
+                deviceId, startTime, endTime
+        );
+        if (events.isEmpty()) {
+            return List.of();
+        }
+        List<Object> result = new ArrayList<>();
+        double totalDistance = calculateTotalDistance(events);
+        result.add(Map.of("totalDistance", totalDistance));
+        return result;
+    }
+
+    private double calculateTotalDistance(List<EventData> events) {
+        double totalDistance = 0.0;
+
+        for (int i = 0; i < events.size() - 1; i++) {
+            EventData current = events.get(i);
+            EventData next = events.get(i + 1);
+
+            totalDistance += calculateDistance(
+                    current.getLatitude(), current.getLongitude(),
+                    next.getLatitude(), next.getLongitude()
+            );
+        }
+
+        return totalDistance;
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6371; // радіус Землі в км
+        double p = Math.PI / 180;
+
+        double a = 0.5 - Math.cos((lat2 - lat1) * p) / 2
+                + Math.cos(lat1 * p) * Math.cos(lat2 * p) *
+                (1 - Math.cos((lon2 - lon1) * p)) / 2;
+
+        return 2 * R * Math.asin(Math.sqrt(a));
     }
 
     @PostConstruct
