@@ -1,16 +1,12 @@
 package com.example.spring_boot.service;
 
-import com.example.spring_boot.entity.EventData;
-import com.example.spring_boot.entity.EventDataMongo;
-import com.example.spring_boot.repository.EventDataMongoRepository;
-import com.example.spring_boot.repository.EventDataPostgresRepository;
+import com.example.spring_boot.entity.EventDataInterface;
+import com.example.spring_boot.entity.EventDataPostgres;
 import jakarta.annotation.PostConstruct;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
+import org.springframework.data.repository.CrudRepository;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,39 +14,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Service
-public class EventDataService {
-
-    private EventDataPostgresRepository eventDataRepository;
-    private EventDataMongoRepository eventDataMongoRepository;
+public class EventDataService<T extends EventDataInterface, M extends CrudRepository> {
     private static int device_count = 10;
     private static int secondsInDay = 86400;
     private static int days = 365;
 
-    public EventDataService(EventDataPostgresRepository repository, EventDataMongoRepository eventDataMongoRepository) {
-        this.eventDataRepository = repository;
-        this.eventDataMongoRepository = eventDataMongoRepository;
+    private M repository;
+
+    private Class<T> modelClass;
+
+    EventDataService(M repository, Class<T> modelClass) {
+        this.repository = repository;
+        this.modelClass = modelClass;
     }
 
-    public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily) {
-        List<EventData> events = eventDataRepository.findByDeviceIdAndTimestampBetween(
-                deviceId, startTime, endTime
-        );
-        if (events.isEmpty()) {
-            return List.of();
-        }
-        List<Object> result = new ArrayList<>();
-        double totalDistance = calculateTotalDistance(events);
-        result.add(Map.of("totalDistance", totalDistance));
-        return result;
+    @PostConstruct
+    public void init() {
+        //createData();
     }
 
-    private double calculateTotalDistance(List<EventData> events) {
+
+
+    protected double calculateTotalDistance(List<T> events) {
         double totalDistance = 0.0;
 
         for (int i = 0; i < events.size() - 1; i++) {
-            EventData current = events.get(i);
-            EventData next = events.get(i + 1);
+            T current = events.get(i);
+            T next = events.get(i + 1);
 
             totalDistance += calculateDistance(
                     current.getLatitude(), current.getLongitude(),
@@ -72,20 +62,14 @@ public class EventDataService {
         return 2 * R * Math.asin(Math.sqrt(a));
     }
 
-    @PostConstruct
-    public void init() {
-//        createDataPostgres();
-//        createMongoData();
-    }
-
-    public void createDataPostgres() {
+    public void createData() {
         var startDate = LocalDateTime.of(2022, 1, 1, 0, 0);
         long startTime = System.currentTimeMillis();
         for (short i = 1; i <= device_count; i++) {
             for (int j = 0; j < days; j++) {
-                List<EventData> list = new ArrayList<>(200);
+                List<T> list = new ArrayList<>(200);
                 for (int k = 0; k < secondsInDay; k += 20) {
-                    var eventData = new EventData();
+                    var eventData = createEventInstance();
 
                     eventData.setDeviceId(i);
                     short al = (short) (12 + 1);
@@ -102,13 +86,13 @@ public class EventDataService {
                     eventData.setLongitude(Double.parseDouble("24.03" + longit));
                     list.add(eventData);
                     if (list.size() == 200) {
-                        eventDataRepository.saveAll(list);
+                        repository.saveAll(list);
                         list = new ArrayList<>();
                     }
 
                 }
                 if (!list.isEmpty()) {
-                    eventDataRepository.saveAll(list);
+                    repository.saveAll(list);
                 }
                 System.out.println("next Day = " + j);
             }
@@ -117,42 +101,12 @@ public class EventDataService {
         System.out.println("finished in " + ((System.currentTimeMillis() - startTime) / 1000) + " s");
     }
 
-    public void createMongoData() {
-        var startDate = LocalDateTime.of(2022, 1, 1, 0, 0);
-        long startTime = System.currentTimeMillis();
-        for (short i = 1; i <= device_count; i++) {
-            for (int j = 0; j < days; j++) {
-                List<EventDataMongo> list = new ArrayList<>(200);
-                for (int k = 0; k < secondsInDay; k += 20) {
-                    var eventData = new EventDataMongo();
 
-                    eventData.setDeviceId(i);
-                    short al = (short) (12 + 1);
-                    eventData.setAltitude(al);
-                    eventData.setSensorData("{sen" + 2 + "=" + 2 + "}");
-                    eventData.setHeading(al);
-                    eventData.setBatteryLevel((short) 1);
-                    LocalDateTime date = startDate.plusDays(j).plusSeconds(k);
-                    eventData.setTimestamp(Timestamp.valueOf(date).getTime());
-                    eventData.setSatelliteCount((byte) 2);
-                    var lat = ThreadLocalRandom.current().nextInt(1000);
-                    var longit = ThreadLocalRandom.current().nextInt(10000);
-                    eventData.setLatitude(Double.parseDouble("49.842" + lat));
-                    eventData.setLongitude(Double.parseDouble("24.03" + longit));
-                    list.add(eventData);
-                    if (list.size() == 200) {
-                        eventDataMongoRepository.saveAll(list);
-                        list = new ArrayList<>();
-                    }
-
-                }
-                if (!list.isEmpty()) {
-                    eventDataMongoRepository.saveAll(list);
-                }
-                System.out.println("next Day = " + j);
-            }
-            System.out.println("next device = " + i);
+    private T createEventInstance() {
+        try {
+            return modelClass.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
-        System.out.println("finished in " + ((System.currentTimeMillis() - startTime) / 1000) + " s");
     }
 }

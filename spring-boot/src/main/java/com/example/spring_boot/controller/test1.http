@@ -1,0 +1,5 @@
+### GET request to example server
+GET http://localhost:8080/api/v1/device/1/track?startTime=1641020400000&endTime=1648147820000
+
+
+###
