@@ -13,7 +13,7 @@ public class EventDataPostgres implements EventDataInterface {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private long id;
-    @Column
+    @Column(name = "device_id")
     private long deviceId;
     @Column
     private long timestamp;
@@ -27,11 +27,11 @@ public class EventDataPostgres implements EventDataInterface {
     private short heading;
     @Column
     private short speed;
-    @Column
+    @Column(name = "battery_level")
     private short batteryLevel;
-    @Column
+    @Column(name = "satellite_count")
     private byte satelliteCount;
-    @Column
+    @Column(name = "sensor_data")
     private String sensorData;
 
 }

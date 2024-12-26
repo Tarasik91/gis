@@ -25,16 +25,14 @@ public class EventDataController {
             @PathVariable Long deviceId,
             @RequestParam Long startTime,
             @RequestParam Long endTime,
-            @RequestParam(value = "dailyMode", defaultValue = "false") boolean dailyMode,
-            Pageable pageable
+            @RequestParam(value = "dailyMode", defaultValue = "false") boolean dailyMode
             ) {
         System.out.println("getDistances Postgres !!!!!!!!!!!");
         List<Object> distances = postgresService.searchDistance(
                 deviceId,
                 startTime,
                 endTime,
-                dailyMode,
-                pageable
+                dailyMode
         );
         return ResponseEntity.ok(distances);
     }

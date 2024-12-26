@@ -20,9 +20,9 @@ public class EventDataPostgresService extends EventDataService<EventDataPostgres
     }
 
 
-    public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily, Pageable pageable) {
+    public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily) {
         List<EventDataPostgres> events = eventDataRepository.findByDeviceIdAndTimestampBetween(
-                deviceId, startTime, endTime, pageable
+                deviceId, startTime, endTime
         );
         if (events.isEmpty()) {
             return List.of();

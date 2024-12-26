@@ -11,6 +11,7 @@ import java.util.List;
 @Repository
 public interface  EventDataPostgresRepository extends JpaRepository<EventDataPostgres, String> {
 
-    List<EventDataPostgres> findByDeviceIdAndTimestampBetween(long deviceId, long timestampAfter, long timestampBefore, Pageable pageable);
+    List<EventDataPostgres> findByDeviceIdAndTimestampBetween( long deviceId, long timestampAfter, long timestampBefore);
+    List<EventDataPostgres> findByDeviceId(long deviceId);
 
 }
