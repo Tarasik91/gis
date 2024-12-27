@@ -1,9 +1,7 @@
 package com.example.spring_boot.service;
 
 import com.example.spring_boot.entity.EventDataInterface;
-import com.example.spring_boot.entity.EventDataPostgres;
 import jakarta.annotation.PostConstruct;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 import java.lang.reflect.InvocationTargetException;
@@ -11,13 +9,12 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class EventDataService<T extends EventDataInterface, M extends CrudRepository> {
     private static int device_count = 10;
     private static int secondsInDay = 86400;
-    private static int days = 365;
+    private static int days = 3650;
 
     private M repository;
 
@@ -30,14 +27,14 @@ public class EventDataService<T extends EventDataInterface, M extends CrudReposi
 
     @PostConstruct
     public void init() {
-        //createData();
+//        createData();
     }
 
 
 
     protected double calculateTotalDistance(List<T> events) {
         double totalDistance = 0.0;
-
+        System.out.println("calculating total distance - > "+ events.size());
         for (int i = 0; i < events.size() - 1; i++) {
             T current = events.get(i);
             T next = events.get(i + 1);
@@ -94,7 +91,7 @@ public class EventDataService<T extends EventDataInterface, M extends CrudReposi
                 if (!list.isEmpty()) {
                     repository.saveAll(list);
                 }
-                System.out.println("next Day = " + j);
+                System.out.println("next device = " + j);
             }
             System.out.println("next device = " + i);
         }

@@ -3,6 +3,7 @@ package com.example.spring_boot.entity;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "event_data")
@@ -11,6 +12,7 @@ public class EventDataMongo implements EventDataInterface {
 
     @Id
     private String id;
+    @Indexed
     private long deviceId;
     private long timestamp;
     private double latitude;
@@ -21,4 +23,5 @@ public class EventDataMongo implements EventDataInterface {
     private short batteryLevel;
     private byte satelliteCount;
     private String sensorData;
+
 }

@@ -2,7 +2,7 @@ package com.example.spring_boot.controller;
 
 import com.example.spring_boot.service.EventDataMongoService;
 import com.example.spring_boot.service.EventDataPostgresService;
-import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,16 +25,14 @@ public class EventDataController {
             @PathVariable Long deviceId,
             @RequestParam Long startTime,
             @RequestParam Long endTime,
-            @RequestParam(value = "dailyMode", defaultValue = "false") boolean dailyMode,
-            Pageable pageable
+            @RequestParam(value = "dailyMode", defaultValue = "false") boolean dailyMode
             ) {
         System.out.println("getDistances Postgres !!!!!!!!!!!");
         List<Object> distances = postgresService.searchDistance(
                 deviceId,
                 startTime,
                 endTime,
-                dailyMode,
-                pageable
+                dailyMode
         );
         return ResponseEntity.ok(distances);
     }
@@ -44,16 +42,14 @@ public class EventDataController {
             @PathVariable Long deviceId,
             @RequestParam Long startTime,
             @RequestParam Long endTime,
-            @RequestParam(value = "dailyMode", defaultValue = "false") boolean dailyMode,
-            Pageable pageable
+            @RequestParam(value = "dailyMode", defaultValue = "false") boolean dailyMode
     ) {
         System.out.println("getDistances Mongo !!!!!!!!!!!");
         List<Object> distances = mongoService.searchDistance(
                 deviceId,
                 startTime,
                 endTime,
-                dailyMode,
-                pageable
+                dailyMode
         );
         return ResponseEntity.ok(distances);
     }
