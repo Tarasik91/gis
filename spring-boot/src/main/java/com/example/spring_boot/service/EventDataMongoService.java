@@ -21,7 +21,7 @@ public class EventDataMongoService extends EventDataService<EventDataMongo,Event
 
     public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily, Pageable pageable) {
         List<EventDataMongo> events = eventDataMongoRepository.findByDeviceIdAndTimestampBetween(
-                deviceId, startTime, endTime, pageable
+                deviceId, startTime, endTime
         );
         if (events.isEmpty()) {
             return List.of();
