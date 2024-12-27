@@ -24,14 +24,19 @@ public class AppConfig {
 
         @Override
         public String getDatabaseName() {
-            return "mongo_test";
+            return "gis";
+        }
+
+        @Override
+        protected boolean autoIndexCreation() {
+            return true;
         }
 
         @Override
         protected void configureClientSettings(MongoClientSettings.Builder builder) {
             builder
                     .credential(MongoCredential.createCredential("root", "admin", "example".toCharArray()))
-                    .applyToClusterSettings(settings  -> {
+                    .applyToClusterSettings(settings -> {
                         settings.hosts(singletonList(new ServerAddress("127.0.0.1", 27017)));
                     });
         }

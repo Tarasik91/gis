@@ -3,10 +3,16 @@ package com.example.spring_boot.entity;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "event_data")
 @Data
+@CompoundIndexes({
+        @CompoundIndex(name = "device_timestamp", def = "{'deviceId' : 1, 'timestamp': 1}")
+})
 public class EventDataMongo implements EventDataInterface {
 
     @Id

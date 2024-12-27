@@ -11,7 +11,6 @@ public interface   EventDataMongoRepository extends MongoRepository<EventDataMon
     List<EventDataMongo> findByDeviceIdAndTimestampBetween(
             long deviceId,
             long timestampAfter,
-            long timestampBefore,
-            org.springframework.data.domain.Pageable pageable
+            long timestampBefore
     );
 }
