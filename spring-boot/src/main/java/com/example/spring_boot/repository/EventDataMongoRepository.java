@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface   EventDataMongoRepository extends MongoRepository<EventDataMongo, Long> {
+public interface EventDataMongoRepository extends MongoRepository<EventDataMongo, Long> {
     List<EventDataMongo> findByDeviceIdAndTimestampBetween(
             long deviceId,
             long timestampAfter,

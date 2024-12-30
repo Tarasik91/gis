@@ -5,7 +5,6 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "event_data")
@@ -13,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @CompoundIndexes({
         @CompoundIndex(name = "device_timestamp", def = "{'deviceId' : 1, 'timestamp': 1}")
 })
-public class EventDataMongo implements EventDataInterface {
+public class EventDataMongo implements IEventData {
 
     @Id
     private String id;

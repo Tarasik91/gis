@@ -7,15 +7,19 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
-public class EventDataMongoService extends EventDataService<EventDataMongo,EventDataMongoRepository>{
+public class EventDataMongoService extends EventDataService<EventDataMongo, EventDataMongoRepository> {
     private EventDataMongoRepository eventDataMongoRepository;
 
     EventDataMongoService(EventDataMongoRepository repository) {
         super(repository, EventDataMongo.class);
         this.eventDataMongoRepository = repository;
+        insertData();
+    }
+
+    public void insertData() {
+        new DataGenerator().generate(EventDataMongo.class, eventDataMongoRepository);
     }
 
 
@@ -27,8 +31,8 @@ public class EventDataMongoService extends EventDataService<EventDataMongo,Event
             return List.of();
         }
         List<Object> result = new ArrayList<>();
-        double totalDistance = calculateTotalDistance(events);
-        result.add(Map.of("totalDistance", totalDistance));
+        //double totalDistance = calculateTotalDistance(events);
+        //result.add(Map.of("totalDistance", totalDistance));
         return result;
     }
 }

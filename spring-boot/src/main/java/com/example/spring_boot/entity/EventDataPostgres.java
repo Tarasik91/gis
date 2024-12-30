@@ -8,7 +8,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Table(name = "event-data")
 @Entity
 @Data
-public class EventDataPostgres implements EventDataInterface {
+public class EventDataPostgres implements IEventData {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
