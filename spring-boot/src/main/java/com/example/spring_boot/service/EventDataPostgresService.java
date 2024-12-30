@@ -1,9 +1,9 @@
 package com.example.spring_boot.service;
 
-import com.example.spring_boot.entity.EventDataMongo;
 import com.example.spring_boot.entity.EventDataPostgres;
 import com.example.spring_boot.repository.EventDataPostgresRepository;
-
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,21 +13,27 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @Service
-public class EventDataPostgresService extends EventDataService<EventDataPostgres,EventDataPostgresRepository>{
+public class EventDataPostgresService {
+    @Value("${data.generator}")
+    private List<String> generatorList;
 
-    private EventDataPostgresRepository eventDataRepository;
+    private final DataGenerator dataGenerator;
 
-    EventDataPostgresService(EventDataPostgresRepository repository) {
-        super(repository, EventDataPostgres.class);
+    private final DistanceCalculator distanceCalculator;
+    private final EventDataPostgresRepository eventDataRepository;
+
+    EventDataPostgresService(EventDataPostgresRepository repository, DataGenerator dataGenerator, DistanceCalculator distanceCalculator) {
         this.eventDataRepository = repository;
-
-        //insertData();
+        this.dataGenerator = dataGenerator;
+        this.distanceCalculator = distanceCalculator;
     }
 
-    public void insertData(){
-        new DataGenerator().generate(EventDataMongo.class, eventDataRepository);
+    @PostConstruct
+    public void init() {
+        if (generatorList.contains("postgres")) {
+            dataGenerator.generate(EventDataPostgres.class, eventDataRepository);
+        }
     }
-
 
     @Transactional(readOnly = true)
     public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily) {
@@ -38,7 +44,7 @@ public class EventDataPostgresService extends EventDataService<EventDataPostgres
             return List.of();
         }*/
         List<Object> result = new ArrayList<>();
-        double totalDistance = calculateTotalDistance(events.toList());
+        double totalDistance = distanceCalculator.calculateTotalDistance(events.toList());
         result.add(Map.of("totalDistance", totalDistance));
         return result;
     }

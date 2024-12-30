@@ -2,6 +2,7 @@ package com.example.spring_boot.service;
 
 import com.example.spring_boot.entity.IEventData;
 import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Service
 public class DataGenerator {
 
     private static int device_count = 10;
