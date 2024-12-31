@@ -1,5 +1,6 @@
 package com.example.spring_boot.controller;
 
+import com.example.spring_boot.dto.EventDataResponse;
 import com.example.spring_boot.service.EventDataMongoService;
 import com.example.spring_boot.service.EventDataPostgresService;
 import org.springframework.data.domain.PageRequest;
@@ -52,14 +53,14 @@ public class EventDataController {
     }
 
     @GetMapping("/device/{deviceId}/events/mongo")
-    public ResponseEntity<Object> getMongoEvents(
+    public ResponseEntity<List<EventDataResponse>> getMongoEvents(
             @PathVariable Long deviceId,
             @RequestParam Long startTime,
             @RequestParam Long endTime,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size
     ) {
-        Object distances = mongoService.getEvents(
+        List<EventDataResponse> distances = mongoService.getEvents(
                 deviceId,
                 startTime,
                 endTime,
@@ -69,14 +70,14 @@ public class EventDataController {
     }
 
     @GetMapping("/device/{deviceId}/events/postgres")
-    public ResponseEntity<Object> getPostgresEvents(
+    public ResponseEntity<List<EventDataResponse>> getPostgresEvents(
             @PathVariable Long deviceId,
             @RequestParam Long startTime,
             @RequestParam Long endTime,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size
     ) {
-        Object distances = postgresService.getEvents(
+        List<EventDataResponse> distances = postgresService.getEvents(
                 deviceId,
                 startTime,
                 endTime,
