@@ -24,14 +24,14 @@ public class DistanceAccumulator {
         previousPoint = currentPoint;
     }
 
-    public synchronized Map<String,Double> getTotalDistance() {
+    public synchronized Map<String, Double> getTotalDistance() {
         return Map.of(getStringDate(), totalDistance);
     }
 
 
     private String getStringDate() {
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        return  dateFormat.format(new Date(previousPoint.timestamp()));
+        return dateFormat.format(new Date(previousPoint.timestamp()));
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {

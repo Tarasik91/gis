@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 public abstract class BaseDataService {
 
-
     private final EventDataTransactionService transactionService;
 
     protected BaseDataService(EventDataTransactionService transactionService) {
