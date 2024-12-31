@@ -1,42 +1,31 @@
 package com.example.spring_boot.service;
 
-import com.example.spring_boot.entity.EventData;
-import com.example.spring_boot.repository.EventDataRepository;
-import jakarta.annotation.PostConstruct;
+import com.example.spring_boot.entity.IEventData;
+import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
-public class EventDataService {
+public class DataGenerator {
 
-    private EventDataRepository eventDataRepository;
     private static int device_count = 10;
     private static int secondsInDay = 86400;
-    private static int days = 365;
+    private static int days = 3365;
 
-    public EventDataService(EventDataRepository repository) {
-        this.eventDataRepository = repository;
-    }
-
-    @PostConstruct
-    public void init() {
-        createData();
-    }
-
-    public void createData() {
-        var startDate = LocalDateTime.of(2022, 1, 1, 0, 0);
+    public void generate(Class<? extends IEventData> clazz, ListCrudRepository rep) {
+        var startDate = LocalDateTime.of(2013, 1, 1, 0, 0);
         long startTime = System.currentTimeMillis();
         for (short i = 1; i <= device_count; i++) {
             for (int j = 0; j < days; j++) {
-                List<EventData> list = new ArrayList<>(200);
+                List<IEventData> list = new ArrayList<>(200);
                 for (int k = 0; k < secondsInDay; k += 20) {
-                    var eventData = new EventData();
+                    var eventData = createEventInstance(clazz);
 
                     eventData.setDeviceId(i);
                     short al = (short) (12 + 1);
@@ -53,18 +42,27 @@ public class EventDataService {
                     eventData.setLongitude(Double.parseDouble("24.03" + longit));
                     list.add(eventData);
                     if (list.size() == 200) {
-                        eventDataRepository.saveAll(list);
+                        rep.saveAll(list);
+                        //consumer.accept(list);
                         list = new ArrayList<>();
                     }
 
                 }
                 if (!list.isEmpty()) {
-                    eventDataRepository.saveAll(list);
+                    rep.saveAll(list);
                 }
                 System.out.println("next Day = " + j);
             }
             System.out.println("next device = " + i);
         }
         System.out.println("finished in " + ((System.currentTimeMillis() - startTime) / 1000) + " s");
+    }
+
+    private IEventData createEventInstance(Class<? extends IEventData> clazz) {
+        try {
+            return clazz.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
