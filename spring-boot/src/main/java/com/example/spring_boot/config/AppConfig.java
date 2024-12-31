@@ -27,10 +27,10 @@ public class AppConfig {
             return "gis";
         }
 
-        @Override
+    /*    @Override
         protected boolean autoIndexCreation() {
             return true;
-        }
+        }*/
 
         @Override
         protected void configureClientSettings(MongoClientSettings.Builder builder) {

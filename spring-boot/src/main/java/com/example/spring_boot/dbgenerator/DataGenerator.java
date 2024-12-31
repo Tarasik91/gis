@@ -1,4 +1,4 @@
-package com.example.spring_boot.service;
+package com.example.spring_boot.dbgenerator;
 
 import com.example.spring_boot.entity.IEventData;
 import org.springframework.data.repository.ListCrudRepository;
@@ -65,4 +65,6 @@ public class DataGenerator {
             throw new RuntimeException(e);
         }
     }
+
+
 }
