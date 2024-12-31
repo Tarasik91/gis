@@ -51,9 +51,8 @@ public class EventDataController {
         return ResponseEntity.ok(distances);
     }
 
-
     @GetMapping("/device/{deviceId}/events/mongo")
-    public ResponseEntity<Object> getEvents(
+    public ResponseEntity<Object> getMongoEvents(
             @PathVariable Long deviceId,
             @RequestParam Long startTime,
             @RequestParam Long endTime,
@@ -61,6 +60,23 @@ public class EventDataController {
             @RequestParam(value = "size", defaultValue = "20") int size
     ) {
         Object distances = mongoService.getEvents(
+                deviceId,
+                startTime,
+                endTime,
+                PageRequest.of(page, size)
+        );
+        return ResponseEntity.ok(distances);
+    }
+
+    @GetMapping("/device/{deviceId}/events/postgres")
+    public ResponseEntity<Object> getPostgresEvents(
+            @PathVariable Long deviceId,
+            @RequestParam Long startTime,
+            @RequestParam Long endTime,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size
+    ) {
+        Object distances = postgresService.getEvents(
                 deviceId,
                 startTime,
                 endTime,

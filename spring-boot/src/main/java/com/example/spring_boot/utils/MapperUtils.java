@@ -4,9 +4,7 @@ import com.example.spring_boot.dto.EventDataResponse;
 import com.example.spring_boot.entity.IEventData;
 
 import java.text.SimpleDateFormat;
-
 public class MapperUtils {
-
     public static EventDataResponse map2Response(IEventData entity) {
         EventDataResponse response = new EventDataResponse();
         response.setLatitude(entity.getLatitude());
