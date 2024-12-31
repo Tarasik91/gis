@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @CompoundIndexes({
         @CompoundIndex(name = "device_timestamp", def = "{'deviceId' : 1, 'timestamp': 1,'latitude' : 1, 'longitude': 1}")
 })
-public class EventDataMongo implements EventDataInterface {
+public class EventDataMongo implements IEventData {
 
     @Id
     private String id;

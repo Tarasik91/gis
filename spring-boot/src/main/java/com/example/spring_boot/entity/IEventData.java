@@ -1,6 +1,6 @@
 package com.example.spring_boot.entity;
 
-public interface EventDataInterface {
+public interface IEventData {
     double getLatitude();
     double getLongitude();
     long getDeviceId();

@@ -34,23 +34,29 @@ public class EventDataController {
                 endTime,
                 dailyMode,
                 page,
-                size
+                size,
+                false
         );
         return ResponseEntity.ok(distances);
     }
 
     @GetMapping("/device/{deviceId}/track/mongo")
-    public ResponseEntity<List<Object>> getDistancesFromMongo(
+    public ResponseEntity<Object> getDistancesFromMongo(
             @PathVariable Long deviceId,
             @RequestParam Long startTime,
             @RequestParam Long endTime,
-            @RequestParam(value = "dailyMode", defaultValue = "false") boolean dailyMode
+            @RequestParam(value = "isDaily", defaultValue = "false") boolean dailyMode,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size
     ) {
-        List<Object> distances = mongoService.searchDistance(
+        Object distances = mongoService.searchDistance(
                 deviceId,
                 startTime,
                 endTime,
-                dailyMode
+                dailyMode,
+                page,
+                size,
+                true
         );
         return ResponseEntity.ok(distances);
     }

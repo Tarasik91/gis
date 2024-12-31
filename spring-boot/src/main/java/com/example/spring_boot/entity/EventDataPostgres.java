@@ -11,7 +11,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 )
 @Entity
 @Data
-public class EventDataPostgres implements EventDataInterface {
+public class EventDataPostgres implements IEventData {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)

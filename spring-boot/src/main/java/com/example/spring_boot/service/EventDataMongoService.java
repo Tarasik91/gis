@@ -1,49 +1,46 @@
 package com.example.spring_boot.service;
 
+import com.example.spring_boot.dbgenerator.DataGenerator;
 import com.example.spring_boot.entity.EventDataMongo;
-import com.example.spring_boot.models.CoordinateDTO;
 import com.example.spring_boot.repository.EventDataMongoRepository;
-import com.example.spring_boot.utils.DistanceAccumulator;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.List;
 
 @Service
-public class EventDataMongoService extends EventDataService<EventDataMongo,EventDataMongoRepository>{
+public class EventDataMongoService extends BaseDataService {
+    @Value("${data.generator}")
+    private List<String> generatorList;
+    private final EventDataMongoRepository eventDataMongoRepository;
+    private final DataGenerator dataGenerator;
 
-    EventDataTransactionService transactionService;
+    EventDataMongoService(EventDataMongoRepository repository,
+                          DataGenerator dataGenerator,
+                          EventDataTransactionService transactionService) {
+        super(transactionService);
+        this.eventDataMongoRepository = repository;
+        this.dataGenerator = dataGenerator;
+    }
 
-
-    EventDataMongoService(EventDataMongoRepository repository, EventDataTransactionService transactionService) {
-        super(repository, EventDataMongo.class);
-        this.transactionService = transactionService;
+    @PostConstruct
+    public void init() {
+        if (generatorList.contains("mongo")) {
+            dataGenerator.generate(EventDataMongo.class, eventDataMongoRepository);
+        }
     }
 
     @Transactional(readOnly = true)
-    public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily) {
-        System.out.println("Mongo Start!!!");
-
-        long interval = 86_400_000L; // Наприклад, 1 година (в мілісекундах)
-        List<Long[]> timeRanges = splitTimeRange(startTime, endTime, interval);
-        List<Map> partialDistances = Collections.synchronizedList(new ArrayList<>());
-        List<CompletableFuture<Void>> futures = timeRanges.stream()
-                .map(range -> CompletableFuture.runAsync(() -> {
-                            DistanceAccumulator accumulator = new DistanceAccumulator();
-                            transactionService.processMongoRange(deviceId, range[0], range[1], accumulator);
-                            partialDistances.add(accumulator.getTotalDistance());
-                        }
-                ))
-                .collect(Collectors.toList());
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-        double totalDistance = 0;
-                //partialDistances.stream().mapToDouble(it->it.values().iterator().next()).sum();
-
-        return List.of(Map.of("totalDistance", totalDistance));
+    @Override
+    public Object searchDistance(long deviceId,
+                                 long startTime,
+                                 long endTime,
+                                 boolean isDaily,
+                                 int page,
+                                 int size,
+                                 boolean isMongo) {
+        return super.searchDistance(deviceId, startTime, endTime, isDaily, page, size, isMongo);
     }
 }
