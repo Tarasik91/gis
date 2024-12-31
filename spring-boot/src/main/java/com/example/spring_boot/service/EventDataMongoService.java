@@ -7,45 +7,43 @@ import com.example.spring_boot.utils.DistanceAccumulator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
 public class EventDataMongoService extends EventDataService<EventDataMongo,EventDataMongoRepository>{
-    private EventDataMongoRepository eventDataMongoRepository;
 
-    EventDataMongoService(EventDataMongoRepository repository) {
+    EventDataTransactionService transactionService;
+
+
+    EventDataMongoService(EventDataMongoRepository repository, EventDataTransactionService transactionService) {
         super(repository, EventDataMongo.class);
-        this.eventDataMongoRepository = repository;
+        this.transactionService = transactionService;
     }
-
-
-//    public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily) {
-//        var startProcessing = System.currentTimeMillis();
-//        List<EventDataMongo> events = eventDataMongoRepository.findByDeviceIdAndTimestampBetween(
-//                deviceId, startTime, endTime
-//        );
-//        System.out.println("Finished fetching from Postgres " + ((System.currentTimeMillis() - startProcessing) / 1000) + " s");
-//        if (events.isEmpty()) {
-//            return List.of();
-//        }
-//        List<Object> result = new ArrayList<>();
-//        double totalDistance = calculateTotalDistance(events);
-//        result.add(Map.of("totalDistance", totalDistance));
-//        return result;
-//    }
 
     @Transactional(readOnly = true)
     public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily) {
-        DistanceAccumulator accumulator = new DistanceAccumulator();
-        try (Stream<CoordinateDTO> events = eventDataMongoRepository.findByDeviceIdAndTimestampBetween(deviceId, startTime, endTime)) {
-            events.sorted(Comparator.comparingLong(CoordinateDTO::timestamp))
-                    .forEach(accumulator::accumulate); // Обробляємо кожен об'єкт окремо
+        System.out.println("Mongo Start!!!");
 
-            return List.of(Map.of("totalDistance", accumulator.getTotalDistance()));
-        }
+        long interval = 86_400_000L; // Наприклад, 1 година (в мілісекундах)
+        List<Long[]> timeRanges = splitTimeRange(startTime, endTime, interval);
+        List<Map> partialDistances = Collections.synchronizedList(new ArrayList<>());
+        List<CompletableFuture<Void>> futures = timeRanges.stream()
+                .map(range -> CompletableFuture.runAsync(() -> {
+                            DistanceAccumulator accumulator = new DistanceAccumulator();
+                            transactionService.processMongoRange(deviceId, range[0], range[1], accumulator);
+                            partialDistances.add(accumulator.getTotalDistance());
+                        }
+                ))
+                .collect(Collectors.toList());
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        double totalDistance = 0;
+                //partialDistances.stream().mapToDouble(it->it.values().iterator().next()).sum();
+
+        return List.of(Map.of("totalDistance", totalDistance));
     }
 }

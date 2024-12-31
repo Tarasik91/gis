@@ -5,7 +5,6 @@ import com.example.spring_boot.models.CoordinateDTO;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 @Repository

@@ -1,6 +1,7 @@
 package com.example.spring_boot.service;
 
 import com.example.spring_boot.entity.EventDataInterface;
+import com.example.spring_boot.entity.EventDataMongo;
 import jakarta.annotation.PostConstruct;
 import org.springframework.data.repository.CrudRepository;
 
@@ -60,6 +61,7 @@ public class EventDataService<T extends EventDataInterface, M extends CrudReposi
     }
 
     public void createData() {
+        long progres = 0;
         var startDate = LocalDateTime.of(2022, 1, 1, 0, 0);
         long startTime = System.currentTimeMillis();
         for (short i = 1; i <= device_count; i++) {
@@ -91,7 +93,7 @@ public class EventDataService<T extends EventDataInterface, M extends CrudReposi
                 if (!list.isEmpty()) {
                     repository.saveAll(list);
                 }
-                System.out.println("next device = " + j);
+                System.out.println("progress = " + progres++ + "/" + (device_count * secondsInDay * days));
             }
             System.out.println("next device = " + i);
         }
@@ -105,5 +107,14 @@ public class EventDataService<T extends EventDataInterface, M extends CrudReposi
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected List<Long[]> splitTimeRange(long start, long end, long interval) {
+        List<Long[]> ranges = new ArrayList<>();
+        for (long i = start; i < end; i += interval) {
+            long rangeEnd = Math.min(i + interval, end); // Виключає накладання
+            ranges.add(new Long[]{i, rangeEnd});
+        }
+        return ranges;
     }
 }

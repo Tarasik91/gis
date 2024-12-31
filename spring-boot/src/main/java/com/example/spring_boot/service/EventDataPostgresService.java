@@ -1,40 +1,71 @@
 package com.example.spring_boot.service;
 
 import com.example.spring_boot.entity.EventDataPostgres;
-import com.example.spring_boot.models.CoordinateDTO;
 import com.example.spring_boot.repository.EventDataPostgresRepository;
 import com.example.spring_boot.utils.DistanceAccumulator;
-import org.springframework.data.domain.Pageable;
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
-public class EventDataPostgresService extends EventDataService<EventDataPostgres,EventDataPostgresRepository>{
+public class EventDataPostgresService extends EventDataService<EventDataPostgres, EventDataPostgresRepository> {
 
-    private EventDataPostgresRepository eventDataRepository;
+    private final EntityManager entityManager;
+    private final EventDataTransactionService transactionService;
 
-    EventDataPostgresService(EventDataPostgresRepository repository) {
+    EventDataPostgresService(EventDataPostgresRepository repository, EntityManager entityManager, EventDataTransactionService transactionService) {
         super(repository, EventDataPostgres.class);
-        this.eventDataRepository = repository;
+        this.entityManager = entityManager;
+        this.transactionService = transactionService;
     }
 
     @Transactional(readOnly = true)
-    public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily) {
-        DistanceAccumulator accumulator = new DistanceAccumulator();
-        try (Stream<CoordinateDTO> events = eventDataRepository.findByDeviceIdAndTimestampBetween(deviceId, startTime, endTime)) {
-            events.sorted(Comparator.comparingLong(CoordinateDTO::timestamp))
-                    .forEach(accumulator::accumulate);
+    public Object searchDistance(
+            long deviceId, long startTime, long endTime, boolean isDaily,
+            int page, int size) {
 
-            return List.of(Map.of("totalDistance", accumulator.getTotalDistance()));
+        long interval = 86_400_000L; // 1 день
+        List<Long[]> timeRanges = splitTimeRange(startTime, endTime, interval);
+
+        int fromIndex = page * size;
+        int toIndex = Math.min(fromIndex + size, timeRanges.size());
+        if (fromIndex >= timeRanges.size()) {
+            return List.of();
         }
+
+        List<Long[]> paginatedTimeRanges = isDaily ? timeRanges.subList(fromIndex, toIndex) : timeRanges;
+        List<Map<String, Double>> partialDistances = Collections.synchronizedList(new ArrayList<>());
+        List<CompletableFuture<Void>> futures = paginatedTimeRanges.stream()
+                .map(range -> CompletableFuture.runAsync(() -> {
+                            DistanceAccumulator accumulator = new DistanceAccumulator();
+                            transactionService.processRange(deviceId, range[0], range[1], accumulator);
+                            partialDistances.add(accumulator.getTotalDistance());
+                        }
+                ))
+                .collect(Collectors.toList());
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        if (!isDaily) {
+            double totalDistance = partialDistances.stream().mapToDouble(it -> it.values().iterator().next()).sum();
+            return Map.of(
+                    "totalDistance", totalDistance
+            );
+        }
+
+        partialDistances.sort((map1,map2) -> {
+            String date1 = map1.keySet().iterator().next();
+            String date2 = map2.keySet().iterator().next();
+            return date1.compareTo(date2);
+        });
+        return Map.of(
+                "page", page,
+                "size", size,
+                "partialDistances", partialDistances
+        );
     }
-
-
 
 }

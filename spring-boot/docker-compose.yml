@@ -10,6 +10,9 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: example
     ports:
       - 27017:27017
+    command: ["mongod", "--wiredTigerCacheSizeGB", "8"]
+    volumes:
+      - mongo-data:/data/db
 
   mongo-express:
     image: mongo-express
@@ -21,3 +24,7 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
       ME_CONFIG_BASICAUTH: false
+
+volumes:
+  mongo-data:
+    driver: local

@@ -2,7 +2,6 @@ package com.example.spring_boot.controller;
 
 import com.example.spring_boot.service.EventDataMongoService;
 import com.example.spring_boot.service.EventDataPostgresService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,18 +20,21 @@ public class EventDataController {
     }
 
     @GetMapping("/device/{deviceId}/track/postgres")
-    public ResponseEntity<List<Object>> getDistancesFromPostgres(
+    public ResponseEntity<Object> getDistancesFromPostgres(
             @PathVariable Long deviceId,
             @RequestParam Long startTime,
             @RequestParam Long endTime,
-            @RequestParam(value = "dailyMode", defaultValue = "false") boolean dailyMode
-            ) {
-        System.out.println("getDistances Postgres !!!!!!!!!!!");
-        List<Object> distances = postgresService.searchDistance(
+            @RequestParam(value = "isDaily", defaultValue = "false") boolean dailyMode,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size
+    ) {
+        Object distances = postgresService.searchDistance(
                 deviceId,
                 startTime,
                 endTime,
-                dailyMode
+                dailyMode,
+                page,
+                size
         );
         return ResponseEntity.ok(distances);
     }
@@ -44,7 +46,6 @@ public class EventDataController {
             @RequestParam Long endTime,
             @RequestParam(value = "dailyMode", defaultValue = "false") boolean dailyMode
     ) {
-        System.out.println("getDistances Mongo !!!!!!!!!!!");
         List<Object> distances = mongoService.searchDistance(
                 deviceId,
                 startTime,
