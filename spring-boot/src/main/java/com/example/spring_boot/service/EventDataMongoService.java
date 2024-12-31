@@ -68,9 +68,6 @@ public class EventDataMongoService {
         Stream<EventDataRecord> events = eventDataMongoRepository.findByDeviceIdAndTimestampBetween(
                 deviceId, startTime, endTime
         );
-       /* if (events.isEmpty()) {
-            return List.of();
-        }*/
         List<Object> result = new ArrayList<>();
         double totalDistance = distanceCalculator.calculateTotalDistance(events.toList());
         result.add(Map.of("totalDistance", totalDistance));

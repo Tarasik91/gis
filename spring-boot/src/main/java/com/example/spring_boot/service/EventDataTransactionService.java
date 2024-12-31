@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.stream.Stream;
 
 @Service
+//TODO the class name doesn't show the purpose of the class
 public class EventDataTransactionService {
 
     private final EventDataPostgresRepository eventDataRepository;

@@ -8,6 +8,8 @@ import java.util.Map;
 
 public class DistanceAccumulator {
     private double totalDistance = 0;
+
+    //TODO do we need to store a state? syncronization method will make the app more slower
     private EventDataRecord previousPoint = null;
 
 
@@ -28,7 +30,7 @@ public class DistanceAccumulator {
         return Map.of(getStringDate(), totalDistance);
     }
 
-
+    // TODO string date should not be a part of this class
     private String getStringDate() {
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return dateFormat.format(new Date(previousPoint.timestamp()));

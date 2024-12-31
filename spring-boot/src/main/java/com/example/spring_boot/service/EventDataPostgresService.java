@@ -46,6 +46,7 @@ public class EventDataPostgresService {
     }
 
     @Transactional(readOnly = true)
+    //TODO should return model instead of object
     public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily) {
         Stream<EventDataRecord> events = eventDataRepository.findByDeviceIdAndTimestampBetween(
                 deviceId, startTime, endTime
