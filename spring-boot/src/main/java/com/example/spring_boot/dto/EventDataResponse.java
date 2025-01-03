@@ -7,10 +7,13 @@ public class EventDataResponse {
     private int sateliteCount;
     private String sensorData;
 
-    public EventDataResponse() {
-    }
+    public EventDataResponse() {}
 
-    public EventDataResponse(String date, double latitude, double longitude, int sateliteCount, String sensorData) {
+    public EventDataResponse(String date,
+                             double latitude,
+                             double longitude,
+                             int sateliteCount,
+                             String sensorData) {
         this.date = date;
         this.latitude = latitude;
         this.longitude = longitude;

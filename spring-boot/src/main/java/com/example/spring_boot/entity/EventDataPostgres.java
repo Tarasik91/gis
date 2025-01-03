@@ -9,6 +9,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
         name = "event-data",
         indexes = @Index(name = "idx_device_id", columnList = "timestamp,deviceId")
 )
+
 @Entity
 @Data
 public class EventDataPostgres implements IEventData {

@@ -1,5 +1,6 @@
 package com.example.spring_boot.service;
 
+import com.example.spring_boot.adapters.RepoAdapter;
 import com.example.spring_boot.utils.DistanceAccumulator;
 
 import java.util.ArrayList;
@@ -9,11 +10,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public abstract class BaseDataService {
+public abstract class EventDataService {
 
-    private final EventDataTransactionService transactionService;
+    private final EventDataPartialTransactionService transactionService;
 
-    protected BaseDataService(EventDataTransactionService transactionService) {
+    protected EventDataService(EventDataPartialTransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
@@ -27,9 +28,9 @@ public abstract class BaseDataService {
         return ranges;
     }
 
-    public Object searchDistance(
-            long deviceId, long startTime, long endTime, boolean isDaily,
-            int page, int size, boolean isMongo) {
+    public Object octopusDistanceSearch(RepoAdapter adapter,
+                                        long deviceId, long startTime, long endTime, boolean isDaily,
+                                        int page, int size) {
 
         long interval = 86_400_000L;
         List<Long[]> timeRanges = splitTimeRange(startTime, endTime, interval);
@@ -42,11 +43,7 @@ public abstract class BaseDataService {
         List<CompletableFuture<Void>> futures = paginatedTimeRanges.stream()
                 .map(range -> CompletableFuture.runAsync(() -> {
                             DistanceAccumulator accumulator = new DistanceAccumulator();
-                            if (isMongo) {
-                                transactionService.processMongoRange(deviceId, range[0], range[1], accumulator);
-                            } else {
-                                transactionService.processRange(deviceId, range[0], range[1], accumulator);
-                            }
+                            transactionService.processRange(adapter, deviceId, range[0], range[1], accumulator);
                             partialDistances.add(accumulator.getTotalDistance());
                         }
                 ))

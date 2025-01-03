@@ -1,11 +1,11 @@
 package com.example.spring_boot.service;
 
+import com.example.spring_boot.adapters.RepoAdapter;
 import com.example.spring_boot.dbgenerator.DataGenerator;
 import com.example.spring_boot.dto.EventDataResponse;
-import com.example.spring_boot.entity.EventDataMongo;
 import com.example.spring_boot.entity.EventDataPostgres;
 import com.example.spring_boot.models.EventDataRecord;
-import com.example.spring_boot.repository.EventDataPostgresRepository;
+import com.example.spring_boot.repository.PostgresEventDataRepository;
 import com.example.spring_boot.utils.DistanceCalculator;
 import com.example.spring_boot.utils.MapperUtils;
 import jakarta.annotation.PostConstruct;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @Service
-public class EventDataPostgresService {
+public class PostgresEventDataService extends EventDataService {
     @Value("${data.generator}")
     private List<String> generatorList;
 
@@ -28,11 +28,13 @@ public class EventDataPostgresService {
 
     private final DistanceCalculator distanceCalculator;
 
-    private final EventDataPostgresRepository eventDataRepository;
+    private final PostgresEventDataRepository eventDataRepository;
 
-    EventDataPostgresService(EventDataPostgresRepository repository,
+    PostgresEventDataService(PostgresEventDataRepository repository,
                              DataGenerator dataGenerator,
-                             DistanceCalculator distanceCalculator) {
+                             DistanceCalculator distanceCalculator,
+                             EventDataPartialTransactionService eventDataPartialTransactionService) {
+        super(eventDataPartialTransactionService);
         this.eventDataRepository = repository;
         this.dataGenerator = dataGenerator;
         this.distanceCalculator = distanceCalculator;
@@ -46,15 +48,15 @@ public class EventDataPostgresService {
     }
 
     @Transactional(readOnly = true)
-    //TODO should return model instead of object
-    public List<Object> searchDistance(long deviceId, long startTime, long endTime, boolean isDaily) {
-        Stream<EventDataRecord> events = eventDataRepository.findByDeviceIdAndTimestampBetween(
-                deviceId, startTime, endTime
-        );
-        List<Object> result = new ArrayList<>();
-        double totalDistance = distanceCalculator.calculateTotalDistance(events.toList());
-        result.add(Map.of("totalDistance", totalDistance));
-        return result;
+    @Override
+    public Object octopusDistanceSearch(RepoAdapter adapter,
+                                        long deviceId,
+                                        long startTime,
+                                        long endTime,
+                                        boolean isDaily,
+                                        int page,
+                                        int size) {
+        return super.octopusDistanceSearch(adapter, deviceId, startTime, endTime, isDaily, page, size);
     }
 
     @Transactional(readOnly = true)

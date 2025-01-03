@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Repository
-public interface EventDataPostgresRepository extends JpaRepository<EventDataPostgres, String> {
+public interface PostgresEventDataRepository extends JpaRepository<EventDataPostgres, String> {
 
     @QueryHints(
             {

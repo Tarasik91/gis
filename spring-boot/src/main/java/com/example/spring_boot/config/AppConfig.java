@@ -24,7 +24,7 @@ public class AppConfig {
 
         @Override
         public String getDatabaseName() {
-            return "gis";
+            return "mongo_test";//"gis";
         }
 
     /*    @Override

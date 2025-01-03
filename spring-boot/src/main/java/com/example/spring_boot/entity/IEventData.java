@@ -22,5 +22,4 @@ public interface IEventData {
     void setSensorData(String sensorData);
     void setTimestamp(long timestamp);
     void setDeviceId(long deviceId);
-
 }
