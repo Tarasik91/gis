@@ -2,14 +2,16 @@ package com.example.spring_boot.service;
 
 import com.example.spring_boot.adapters.RepoAdapter;
 import com.example.spring_boot.dbgenerator.DataGenerator;
+import com.example.spring_boot.dto.DeviceDistanceResponse;
+import com.example.spring_boot.dto.EventDataPayload;
 import com.example.spring_boot.dto.EventDataResponse;
-import com.example.spring_boot.entity.EventDataMongo;
-import com.example.spring_boot.models.EventDataRecord;
+import com.example.spring_boot.entity.MongoEventData;
 import com.example.spring_boot.repository.MongoEventDataRepository;
 import com.example.spring_boot.utils.DistanceCalculator;
 import com.example.spring_boot.utils.MapperUtils;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,29 +39,26 @@ public class MongoEventDataService extends EventDataService {
     @PostConstruct
     public void init() {
         if (generatorList.contains("mongo")) {
-            dataGenerator.generate(EventDataMongo.class, eventDataMongoRepository);
+            dataGenerator.generate(MongoEventData.class, eventDataMongoRepository);
         }
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Object octopusDistanceSearch(RepoAdapter adapter,
-                                        long deviceId,
-                                        long startTime,
-                                        long endTime,
-                                        boolean isDaily,
-                                        int page,
-                                        int size) {
-        return super.octopusDistanceSearch(adapter, deviceId, startTime, endTime, isDaily, page, size);
+    public DeviceDistanceResponse octopusDistanceSearch(EventDataPayload payload) {
+        return super.octopusDistanceSearch(payload);
+    }
+
+    @Override
+    public String getDbName() {
+        return "mongo";
     }
 
     @Transactional(readOnly = true)
-    public List<EventDataResponse> getEvents(long deviceId,
-                                                  long startTime,
-                                                  long endTime,
-                                                  Pageable pageable) {
-        List<EventDataMongo> events = eventDataMongoRepository.findByDeviceIdAndTimestampBetween(
-                deviceId, startTime, endTime, pageable);
+    @Override
+    public List<EventDataResponse> getEvents(EventDataPayload payload) {
+        List<MongoEventData> events = eventDataMongoRepository.findByDeviceIdAndTimestampBetween(
+                payload.deviceId(), payload.startTime(), payload.endTime(), PageRequest.of(payload.page(), payload.size()));
         return events
                 .stream()
                 .map(MapperUtils::map2Response)

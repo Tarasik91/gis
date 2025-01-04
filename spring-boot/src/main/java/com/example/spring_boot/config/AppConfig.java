@@ -22,8 +22,8 @@ public class AppConfig {
     @Configuration
     public class MongoAppConfig extends AbstractMongoClientConfiguration {
 
-        @Override
-        public String getDatabaseName() {
+         @Override
+         public String getDatabaseName() {
             return "gis";
         }
 

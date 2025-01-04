@@ -2,22 +2,21 @@ package com.example.spring_boot.service;
 
 import com.example.spring_boot.adapters.RepoAdapter;
 import com.example.spring_boot.dbgenerator.DataGenerator;
+import com.example.spring_boot.dto.DeviceDistanceResponse;
+import com.example.spring_boot.dto.EventDataPayload;
 import com.example.spring_boot.dto.EventDataResponse;
-import com.example.spring_boot.entity.EventDataPostgres;
-import com.example.spring_boot.models.EventDataRecord;
+import com.example.spring_boot.entity.PostgresEventData;
 import com.example.spring_boot.repository.PostgresEventDataRepository;
 import com.example.spring_boot.utils.DistanceCalculator;
 import com.example.spring_boot.utils.MapperUtils;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 @Service
 public class PostgresEventDataService extends EventDataService {
@@ -43,29 +42,26 @@ public class PostgresEventDataService extends EventDataService {
     @PostConstruct
     public void init() {
         if (generatorList.contains("postgres")) {
-            dataGenerator.generate(EventDataPostgres.class, eventDataRepository);
+            dataGenerator.generate(PostgresEventData.class, eventDataRepository);
         }
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Object octopusDistanceSearch(RepoAdapter adapter,
-                                        long deviceId,
-                                        long startTime,
-                                        long endTime,
-                                        boolean isDaily,
-                                        int page,
-                                        int size) {
-        return super.octopusDistanceSearch(adapter, deviceId, startTime, endTime, isDaily, page, size);
+    public DeviceDistanceResponse octopusDistanceSearch(EventDataPayload payload) {
+        return super.octopusDistanceSearch(payload);
+    }
+
+    @Override
+    public String getDbName() {
+        return "postgres";
     }
 
     @Transactional(readOnly = true)
-    public List<EventDataResponse> getEvents(long deviceId,
-                                             long startTime,
-                                             long endTime,
-                                             Pageable pageable) {
-        List<EventDataPostgres> events = eventDataRepository.findByDeviceIdAndTimestampBetween(
-                deviceId, startTime, endTime, pageable);
+    @Override
+    public List<EventDataResponse> getEvents(EventDataPayload payload) {
+        List<PostgresEventData> events = eventDataRepository.findByDeviceIdAndTimestampBetween(
+                payload.deviceId(), payload.startTime(), payload.endTime(), PageRequest.of(payload.page(), payload.size()));
         return events
                 .stream()
                 .map(MapperUtils::map2Response)

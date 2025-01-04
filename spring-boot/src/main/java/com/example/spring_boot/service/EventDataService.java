@@ -1,7 +1,11 @@
 package com.example.spring_boot.service;
 
 import com.example.spring_boot.adapters.RepoAdapter;
+import com.example.spring_boot.dto.DeviceDistanceResponse;
+import com.example.spring_boot.dto.EventDataPayload;
+import com.example.spring_boot.dto.EventDataResponse;
 import com.example.spring_boot.utils.DistanceAccumulator;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,45 +32,38 @@ public abstract class EventDataService {
         return ranges;
     }
 
-    public Object octopusDistanceSearch(RepoAdapter adapter,
-                                        long deviceId, long startTime, long endTime, boolean isDaily,
-                                        int page, int size) {
+    abstract public String getDbName();
+
+    abstract public List<EventDataResponse> getEvents(EventDataPayload payload);
+
+
+    public DeviceDistanceResponse octopusDistanceSearch(EventDataPayload payload) {
 
         long interval = 86_400_000L;
-        List<Long[]> timeRanges = splitTimeRange(startTime, endTime, interval);
+        List<Long[]> timeRanges = splitTimeRange(payload.startTime(), payload.endTime(), interval);
 
-        int fromIndex = page * size;
-        int toIndex = Math.min(fromIndex + size, timeRanges.size());
+        int fromIndex = payload.page() * payload.size();
+        int toIndex = Math.min(fromIndex + payload.size(), timeRanges.size());
 
-        List<Long[]> paginatedTimeRanges = isDaily ? timeRanges.subList(fromIndex, toIndex) : timeRanges;
-        List<Map<String, Double>> partialDistances = Collections.synchronizedList(new ArrayList<>());
+        List<Long[]> paginatedTimeRanges = payload.isDaily() ? timeRanges.subList(fromIndex, toIndex) : timeRanges;
+        List<Double> partialDistances = Collections.synchronizedList(new ArrayList<>());
         List<CompletableFuture<Void>> futures = paginatedTimeRanges.stream()
                 .map(range -> CompletableFuture.runAsync(() -> {
                             DistanceAccumulator accumulator = new DistanceAccumulator();
-                            transactionService.processRange(adapter, deviceId, range[0], range[1], accumulator);
+                            transactionService.processRange(payload.db(), payload.deviceId(), range[0], range[1], accumulator);
                             partialDistances.add(accumulator.getTotalDistance());
                         }
                 ))
                 .collect(Collectors.toList());
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        if (!isDaily) {
-            double totalDistance = partialDistances.stream().mapToDouble(it -> it.values().iterator().next()).sum();
-            return Map.of(
-                    "totalDistance", totalDistance
-            );
+        if (!payload.isDaily()) {
+            double totalDistance = partialDistances.stream().mapToDouble(it -> it).sum();
+            return new DeviceDistanceResponse(totalDistance);
         }
 
-        partialDistances.sort((map1, map2) -> {
-            String date1 = map1.keySet().iterator().next();
-            String date2 = map2.keySet().iterator().next();
-            return date1.compareTo(date2);
-        });
-        return Map.of(
-                "page", page,
-                "size", size,
-                "partialDistances", partialDistances
-        );
+
+        return new DeviceDistanceResponse(partialDistances);
     }
 
 }

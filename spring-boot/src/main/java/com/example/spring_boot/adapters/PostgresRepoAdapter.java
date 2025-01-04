@@ -16,6 +16,11 @@ public class PostgresRepoAdapter implements RepoAdapter {
     }
 
     @Override
+    public String getDbName() {
+        return "postgres";
+    }
+
+    @Override
     public Stream<EventDataRecord> processPartition(long id, long start, long end) {
         return postgresEventDataRepository.findByDeviceIdAndTimestampBetween(id, start, end);
     }

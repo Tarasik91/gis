@@ -17,6 +17,11 @@ public class MongoRepoAdapter implements RepoAdapter {
 
 
     @Override
+    public String getDbName() {
+        return "mongo";
+    }
+
+    @Override
     public Stream<EventDataRecord> processPartition(long deviceId, long starTime, long endTime) {
         return mongoEventDataRepository.findByDeviceIdAndTimestampBetween(deviceId, starTime, endTime);
     }

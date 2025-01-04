@@ -1,11 +1,14 @@
 package com.example.spring_boot.utils;
 
 import com.example.spring_boot.models.EventDataRecord;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+@Component
 public class DistanceAccumulator {
     private double totalDistance = 0;
 
@@ -26,14 +29,8 @@ public class DistanceAccumulator {
         previousPoint = currentPoint;
     }
 
-    public synchronized Map<String, Double> getTotalDistance() {
-        return Map.of(getStringDate(), totalDistance);
-    }
-
-    // TODO string date should not be a part of this class
-    private String getStringDate() {
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        return dateFormat.format(new Date(previousPoint.timestamp()));
+    public synchronized double getTotalDistance() {
+        return totalDistance;
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {

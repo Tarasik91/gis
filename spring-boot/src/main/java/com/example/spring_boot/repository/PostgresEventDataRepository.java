@@ -1,6 +1,6 @@
 package com.example.spring_boot.repository;
 
-import com.example.spring_boot.entity.EventDataPostgres;
+import com.example.spring_boot.entity.PostgresEventData;
 import com.example.spring_boot.models.EventDataRecord;
 import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Repository
-public interface PostgresEventDataRepository extends JpaRepository<EventDataPostgres, String> {
+public interface PostgresEventDataRepository extends JpaRepository<PostgresEventData, String> {
 
     @QueryHints(
             {
@@ -25,13 +25,13 @@ public interface PostgresEventDataRepository extends JpaRepository<EventDataPost
             }
     )
     @Query("select new com.example.spring_boot.models.EventDataRecord(e.latitude, e.longitude, e.timestamp) " +
-            "from EventDataPostgres e " +
+            "from PostgresEventData e " +
             "where e.deviceId=:deviceId and timestamp>= :start and timestamp <= :end")
     Stream<EventDataRecord> findByDeviceIdAndTimestampBetween(@Param("deviceId") long deviceId, @Param("start") long start, @Param("end") long end);
 
 
-    List<EventDataPostgres> findByDeviceIdAndTimestampBetween(@Param("deviceId") long deviceId, @Param("start") long start, @Param("end") long end, Pageable pageable);
+    List<PostgresEventData> findByDeviceIdAndTimestampBetween(@Param("deviceId") long deviceId, @Param("start") long start, @Param("end") long end, Pageable pageable);
 
-    List<EventDataPostgres> findByDeviceId(long deviceId);
+    List<PostgresEventData> findByDeviceId(long deviceId);
 
 }
