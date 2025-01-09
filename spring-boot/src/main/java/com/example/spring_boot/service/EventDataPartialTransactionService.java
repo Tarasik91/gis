@@ -16,8 +16,7 @@ public class EventDataPartialTransactionService {
     private final List<RepoAdapter> adapters;
 
     public EventDataPartialTransactionService(List<RepoAdapter> adapters) {
-        this.adapters = new ArrayList<>();
-        this.adapters.addAll(adapters);
+        this.adapters = adapters;
     }
 
     @Transactional(readOnly = true)
