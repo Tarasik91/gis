@@ -1,7 +1,4 @@
 package com.example.spring_boot.service;
-
-import com.example.spring_boot.adapters.MongoRepoAdapter;
-import com.example.spring_boot.adapters.PostgresRepoAdapter;
 import com.example.spring_boot.adapters.RepoAdapter;
 import com.example.spring_boot.models.EventDataRecord;
 import com.example.spring_boot.utils.DistanceAccumulator;
@@ -18,14 +15,14 @@ public class EventDataPartialTransactionService {
 
     private final List<RepoAdapter> adapters;
 
-    public EventDataPartialTransactionService(MongoRepoAdapter mongoRepoAdapter, PostgresRepoAdapter postgresRepoAdapter) {
+    public EventDataPartialTransactionService(List<RepoAdapter> adapters) {
         this.adapters = new ArrayList<>();
-        adapters.add(mongoRepoAdapter);
-        adapters.add(postgresRepoAdapter);
+        this.adapters.addAll(adapters);
     }
 
     @Transactional(readOnly = true)
-    public void processRange(String db, long deviceId, long startTime, long endTime, DistanceAccumulator accumulator) {
+    public DistanceAccumulator processRange(String db, long deviceId, long startTime, long endTime) {
+        DistanceAccumulator accumulator = new DistanceAccumulator();
         adapters.stream().filter(it->it.getDbName().equalsIgnoreCase(db))
                 .findFirst().ifPresent(adapter->{
             try (Stream<EventDataRecord> events = adapter.processPartition(deviceId, startTime, endTime)) {
@@ -33,6 +30,7 @@ public class EventDataPartialTransactionService {
                         .forEach(accumulator::accumulate);
             }
         });
+        return accumulator;
     }
 }
 

@@ -49,8 +49,7 @@ public abstract class EventDataService {
         List<Double> partialDistances = Collections.synchronizedList(new ArrayList<>());
         List<CompletableFuture<Void>> futures = paginatedTimeRanges.stream()
                 .map(range -> CompletableFuture.runAsync(() -> {
-                            DistanceAccumulator accumulator = new DistanceAccumulator();
-                            transactionService.processRange(payload.db(), payload.deviceId(), range[0], range[1], accumulator);
+                            DistanceAccumulator accumulator = transactionService.processRange(payload.db(), payload.deviceId(), range[0], range[1]);
                             partialDistances.add(accumulator.getTotalDistance());
                         }
                 ))
