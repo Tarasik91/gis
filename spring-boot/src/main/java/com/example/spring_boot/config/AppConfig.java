@@ -3,6 +3,7 @@ package com.example.spring_boot.config;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
@@ -13,9 +14,29 @@ import static java.util.Collections.singletonList;
 @Configuration
 public class AppConfig {
 
+    @Value("${mongo.host}")
+    private String mongoHost;
+
+    @Value("${mongo.port}")
+    private int mongoPort;
+
+    @Value("${mongo.database}")
+    private String mongoDbName;
+
+    @Value("${mongo.username}")
+    private String mongoUsername;
+
+    @Value("${mongo.password}")
+    private String mongoPassword;
+
+    @Value("${mongo.authentication-database}")
+    private String mongoAuthDatabase;
+
+
+
     public @Bean MongoClientFactoryBean mongo() {
         MongoClientFactoryBean mongo = new MongoClientFactoryBean();
-        mongo.setHost("localhost");
+        mongo.setHost(mongoHost);
         return mongo;
     }
 
@@ -24,7 +45,7 @@ public class AppConfig {
 
          @Override
          public String getDatabaseName() {
-            return "gis";
+            return mongoDbName;
         }
 
     /*    @Override
@@ -35,9 +56,9 @@ public class AppConfig {
         @Override
         protected void configureClientSettings(MongoClientSettings.Builder builder) {
             builder
-                    .credential(MongoCredential.createCredential("root", "admin", "example".toCharArray()))
+                    .credential(MongoCredential.createCredential(mongoUsername, mongoAuthDatabase, mongoPassword.toCharArray()))
                     .applyToClusterSettings(settings -> {
-                        settings.hosts(singletonList(new ServerAddress("127.0.0.1", 27017)));
+                        settings.hosts(singletonList(new ServerAddress(mongoHost, mongoPort)));
                     });
         }
     }

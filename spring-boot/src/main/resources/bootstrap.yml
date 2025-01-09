@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: ostap
+  application:
+    name: spring-boot
+  config:
+    import: "configserver:http://localhost:8888"
+      
