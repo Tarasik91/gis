@@ -17,7 +17,6 @@ public class EventDataController {
 
     private final List<EventDataService> serviceList;
 
-
     public EventDataController(List<EventDataService> serviceList) {
         this.serviceList = serviceList;
     }
@@ -43,9 +42,7 @@ public class EventDataController {
                 .stream()
                 .filter(it -> it.getDbName().equals(payload.db()))
                 .findFirst()
-                .ifPresent(it ->
-                        result.addAll(it.getEvents(payload))
-                );
+                .ifPresent(it -> result.addAll(it.getEvents(payload)));
         return result;
     }
 }
