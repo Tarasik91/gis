@@ -1,5 +1,6 @@
 package com.example.eventdata_service.controller;
 
+import com.example.eventdata_service.dto.DeviceDistanceResponse;
 import com.example.eventdata_service.dto.EventDataPayload;
 import com.example.eventdata_service.service.EventDataService;
 import com.example.eventdata_service.service.MongoEventDataService;
@@ -26,7 +27,7 @@ public class EventDataControllerV2 {
 
 
     @GetMapping("/device/{deviceId}/distance/{db}")
-    public ResponseEntity<Object> getDistancesRequest(
+    public ResponseEntity<DeviceDistanceResponse> getDistancesRequest(
             @PathVariable String db,
             @PathVariable Long deviceId,
             @RequestParam Long startTime,
@@ -35,17 +36,14 @@ public class EventDataControllerV2 {
             @RequestParam(value = "size", defaultValue = "20") int size,
             @RequestParam(value = "isDaily", defaultValue = "false") boolean dailyMode
     ) {
-        var serviceOptional = eventDataServices.stream()
+        var entity = eventDataServices.stream()
                 .filter(it -> it.getDbName().equals(db))
-                .findFirst();
-
-        if (serviceOptional.isPresent()) {
-            var service = serviceOptional.get();
-            var payload = new EventDataPayload(db, deviceId, startTime, endTime, page, size, dailyMode);
-            var result = service.octopusDistanceSearch(payload);
-            return ResponseEntity.ok(result);
-        } else {
-            return ResponseEntity.status(404).body("Service not found for db: " + db);
-        }
+                .findFirst()
+                .map(service -> {
+                    var payload = new EventDataPayload(db, deviceId, startTime, endTime, page, size, dailyMode);
+                    return service.octopusDistanceSearch(payload);
+                })
+                .orElseThrow();
+        return ResponseEntity.ok(entity);
     }
 }

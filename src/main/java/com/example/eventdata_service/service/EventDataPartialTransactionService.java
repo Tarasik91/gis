@@ -1,4 +1,5 @@
 package com.example.eventdata_service.service;
+
 import com.example.eventdata_service.models.EventDataRecord;
 import com.example.eventdata_service.adapters.RepoAdapter;
 import com.example.eventdata_service.utils.DistanceAccumulator;
@@ -21,13 +22,15 @@ public class EventDataPartialTransactionService {
     @Transactional(readOnly = true)
     public DistanceAccumulator processRange(String db, long deviceId, long startTime, long endTime) {
         DistanceAccumulator accumulator = new DistanceAccumulator();
-        adapters.stream().filter(it->it.getDbName().equalsIgnoreCase(db))
-                .findFirst().ifPresent(adapter->{
-            try (Stream<EventDataRecord> events = adapter.processPartition(deviceId, startTime, endTime)) {
-                events.sorted(Comparator.comparingLong(EventDataRecord::timestamp))
-                        .forEach(accumulator::accumulate);
-            }
-        });
+        adapters
+                .stream()
+                .filter(it -> it.getDbName().equalsIgnoreCase(db))
+                .findFirst().ifPresent(adapter -> {
+                    try (Stream<EventDataRecord> events = adapter.processPartition(deviceId, startTime, endTime)) {
+                        events.sorted(Comparator.comparingLong(EventDataRecord::timestamp))
+                                .forEach(accumulator::accumulate);
+                    }
+                });
         return accumulator;
     }
 }
