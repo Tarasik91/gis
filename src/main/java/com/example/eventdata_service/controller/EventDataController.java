@@ -18,10 +18,8 @@ public class EventDataController {
     private final List<EventDataService> serviceList;
 
 
-    public EventDataController(PostgresEventDataService postgresService, MongoEventDataService mongoService) {
-        serviceList = new ArrayList<>();
-        serviceList.add(postgresService);
-        serviceList.add(mongoService);
+    public EventDataController(List<EventDataService> serviceList) {
+        this.serviceList = serviceList;
     }
 
     @GetMapping("/device/{deviceId}/distance/{db}")
@@ -35,16 +33,19 @@ public class EventDataController {
             @RequestParam(value = "isDaily", defaultValue = "false") boolean dailyMode
     ) {
 
-        var payload = new EventDataPayload(db,deviceId,startTime,endTime,page,size,dailyMode);
+        var payload = new EventDataPayload(db, deviceId, startTime, endTime, page, size, dailyMode);
         return ResponseEntity.ok(getEvents(payload));
     }
 
     private List<EventDataResponse> getEvents(EventDataPayload payload) {
         final List<EventDataResponse> result = new ArrayList<>();
-        serviceList.stream().filter(it->it.getDbName().equals(payload.db()))
-                .findFirst().ifPresent(it-> {
-            result.addAll(it.getEvents(payload));
-        });
+        serviceList
+                .stream()
+                .filter(it -> it.getDbName().equals(payload.db()))
+                .findFirst()
+                .ifPresent(it -> {
+                    result.addAll(it.getEvents(payload));
+                });
         return result;
     }
 }

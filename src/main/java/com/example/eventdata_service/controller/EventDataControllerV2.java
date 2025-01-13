@@ -15,14 +15,10 @@ import java.util.List;
 @RequestMapping("/api/v2")
 public class EventDataControllerV2 {
 
-    List<EventDataService> eventDataServices;
+    private final List<EventDataService> eventDataServices;
 
-    public EventDataControllerV2(
-            PostgresEventDataService postgresEventDataService,
-            MongoEventDataService mongoEventDataService) {
-        eventDataServices = new ArrayList<>();
-        eventDataServices.add(postgresEventDataService);
-        eventDataServices.add(mongoEventDataService);
+    public EventDataControllerV2(List<EventDataService> eventDataServices) {
+        this.eventDataServices = eventDataServices;
     }
 
 
